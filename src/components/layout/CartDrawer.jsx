@@ -3,7 +3,7 @@ import { formatPrice } from '../../data/products'
 import { useCart } from '../../context/CartContext'
 import { useLockBodyScroll, useOnEscape } from '../../hooks'
 import { Icon } from '../Icon'
-import { ProductVisual, shapeForCategory } from '../ProductVisual'
+import { ProductImage } from '../ProductImage'
 
 const FREE_SHIPPING_THRESHOLD = 60
 
@@ -87,12 +87,7 @@ export function CartDrawer() {
                     className="shrink-0"
                     aria-label={item.name}
                   >
-                    <ProductVisual
-                      shape={shapeForCategory(item.category)}
-                      from={item.shade.from}
-                      to={item.shade.to}
-                      className="size-24 rounded-sm"
-                    />
+                    <ProductImage product={item} className="size-24 rounded-sm" />
                   </Link>
 
                   <div className="flex min-w-0 flex-1 flex-col">

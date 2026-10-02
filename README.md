@@ -77,9 +77,9 @@ npm run lint    # run oxlint
 
 ## Responsive design
 
-Verified with no horizontal page overflow at 390px, 820px and 1440px. Product visuals are
-generated inline as SVG (`ProductVisual`) so the project has no binary image dependencies and
-scales losslessly at every breakpoint.
+Verified with no horizontal page overflow at 390px, 820px and 1440px. All imagery uses
+`object-cover` on a fixed `aspect-[4/5]` frame, so any photo crop composes identically at every
+breakpoint. Card images are `loading="lazy"`; above-the-fold images load eagerly.
 
 ## Project structure
 
@@ -110,8 +110,28 @@ src/
 
 - Theme tokens (colours, fonts, easing) are defined once in `src/index.css` under `@theme`.
   Change them there to rebrand the whole site.
-- `ProductVisual` renders a gradient + SVG bottle silhouette driven by each product's
-  `shade.from` / `shade.to`. Replace with real photography by swapping that component for an
-  `<img>` when assets are available.
+### Swapping product photography
+
+Every product renders through `<ProductImage>` (`src/components/ProductImage.jsx`), which draws
+the photo in `public/products/` and **falls back automatically to the generated SVG artwork**
+(`ProductVisual`) if the file is missing or fails to load. The site therefore never shows a
+broken image.
+
+To use the client's real photography, drop the files into `public/products/` and update the
+`photo` / `photoAlt` fields on each product in `src/data/products.js`. Nothing else needs to
+change. If a product has no `photo` field, it uses the SVG artwork.
+
+### ⚠️ Placeholder photography disclaimer
+
+The current photos are **free Pexels stock images of other people's cosmetic products**, not
+LUMIÈRE products. They are licensed for commercial use under the Pexels Licence (no attribution
+required; credits are recorded in the `PHOTO_CREDITS` export in `src/data/products.js`).
+
+Before this goes anywhere near a real customer, a human **must** review every image and:
+1. Replace each shot with the client's own product photography.
+2. Replace any shot showing a recognisable third-party brand or logo — relabelling a
+   competitor's product as LUMIÈRE is a trademark problem, not a cosmetic one.
+3. Confirm the subject of each shot actually matches the product it illustrates. These were
+   matched from stock-photo descriptions, not from inspecting the images.
 - To connect a real API, replace the contents of `src/data/products.js` with a fetch in a
   `useEffect` or a loader on the route.

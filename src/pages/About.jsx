@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { BENEFITS, CATEGORIES, PROCESS_STEPS, PRODUCTS } from '../data/products'
 import { Icon } from '../components/Icon'
-import { ProductVisual } from '../components/ProductVisual'
+import { EditorialImage } from '../components/ProductImage'
 import { Reveal, SectionHeading } from '../components/ui/Section'
 
 const TIMELINE = [
@@ -70,11 +70,12 @@ export default function About() {
       <section className="container-page py-20">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
           <Reveal className="lg:col-span-5">
-            <ProductVisual
-              shape="bottle"
+            <EditorialImage
+              src="/products/editorial-jar.jpg"
+              alt="Skincare jars and bottles arranged in the LUMIÈRE studio"
               from="#e4dbd5"
               to="#786158"
-              label="LUMIÈRE laboratory"
+              shape="jar"
               className="aspect-[4/5] w-full"
             />
           </Reveal>

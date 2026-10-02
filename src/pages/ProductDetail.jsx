@@ -4,7 +4,7 @@ import { formatPrice, getCategoryById, getProductById, PRODUCTS } from '../data/
 import { useCart } from '../context/CartContext'
 import { Icon } from '../components/Icon'
 import { ProductCard, Rating } from '../components/ProductCard'
-import { ProductVisual, shapeForCategory } from '../components/ProductVisual'
+import { ProductImage } from '../components/ProductImage'
 import { Reveal, SectionHeading } from '../components/ui/Section'
 
 const TABS = [
@@ -100,13 +100,7 @@ function ProductDetail({ productId }) {
       <section className="container-page grid gap-12 py-12 lg:grid-cols-2 lg:gap-16 lg:py-16">
         <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
           <div className="relative">
-            <ProductVisual
-              shape={shapeForCategory(product.category)}
-              from={product.shade.from}
-              to={product.shade.to}
-              label={product.name}
-              className="aspect-[4/5] w-full"
-            />
+            <ProductImage product={product} priority className="aspect-[4/5] w-full" />
             {product.badge && (
               <span className="absolute left-5 top-5 bg-ink-950 px-3.5 py-2 text-[0.6rem] font-medium uppercase tracking-[0.2em] text-ink-50">
                 {product.badge}

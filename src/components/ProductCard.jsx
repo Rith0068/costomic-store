@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { formatPrice, getCategoryById } from '../data/products'
 import { useCart } from '../context/CartContext'
 import { Icon } from './Icon'
-import { ProductVisual, shapeForCategory } from './ProductVisual'
+import { ProductImage } from './ProductImage'
 
 export function Rating({ value, reviews, className = '' }) {
   return (
@@ -38,12 +38,10 @@ export function ProductCard({ product, index = 0 }) {
     >
       <div className="relative overflow-hidden">
         <Link to={`/products/${product.id}`} aria-label={product.name}>
-          <ProductVisual
-            shape={shapeForCategory(product.category)}
-            from={product.shade.from}
-            to={product.shade.to}
-            label={product.name}
-            className="aspect-[4/5] w-full transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]"
+          <ProductImage
+            product={product}
+            priority={index < 4}
+            className="aspect-[4/5] w-full transition-transform duration-700 ease-out-expo group-hover:scale-[1.03] [&>img]:group-hover:scale-[1.03]"
           />
         </Link>
 

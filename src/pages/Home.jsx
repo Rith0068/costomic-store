@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATEGORIES, FAQS, PROCESS_STEPS, PRODUCTS, TESTIMONIALS } from '../data/products'
+import { CATEGORIES, FAQS, PROCESS_STEPS, PRODUCTS, TESTIMONIALS, getProductById } from '../data/products'
 import { useReveal } from '../hooks'
 import { Icon } from '../components/Icon'
 import { ProductCard, Rating } from '../components/ProductCard'
-import { ProductVisual, shapeForCategory } from '../components/ProductVisual'
+import { ProductImage } from '../components/ProductImage'
 import { Marquee, Reveal, SectionHeading } from '../components/ui/Section'
+
+const HERO_PRODUCT = getProductById('vit-c-glow-serum')
 
 const CONCERNS = [
   {
@@ -87,11 +89,9 @@ function Hero() {
 
         <div className="fade-up relative lg:col-span-6" style={{ animationDelay: '200ms' }}>
           <div className="relative mx-auto max-w-md lg:max-w-none">
-            <ProductVisual
-              shape="dropper"
-              from="#fbeae7"
-              to="#c14e45"
-              label="Vitamin C Glow Serum"
+            <ProductImage
+              product={HERO_PRODUCT}
+              priority
               className="aspect-[4/5] w-full"
             />
             <div className="absolute -bottom-6 -left-4 w-48 border border-ink-200 bg-ink-50/95 p-5 shadow-xl backdrop-blur sm:-left-8 sm:w-56">
@@ -177,12 +177,9 @@ function Bestsellers() {
               className="group w-full max-w-[9rem] flex-1"
               aria-label={product.name}
             >
-              <ProductVisual
-                shape={shapeForCategory(product.category)}
-                from={product.shade.from}
-                to={product.shade.to}
-                label={product.name}
-                className="aspect-[4/5] w-full transition-transform duration-500 group-hover:-translate-y-2"
+              <ProductImage
+                product={product}
+                className="aspect-[4/5] w-full transition-transform duration-500 group-hover:-translate-y-2 [&>img]:group-hover:scale-105"
               />
             </Link>
           ))}

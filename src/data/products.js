@@ -39,6 +39,8 @@ export const CATEGORIES = [
 export const PRODUCTS = [
   {
     id: 'vit-c-glow-serum',
+    photo: '/products/vit-c-glow-serum.jpg',
+    photoAlt: 'Skincare serum bottle photographed among green leaves',
     name: 'Vitamin C Glow Serum',
     tagline: '15% stabilised vitamin C',
     category: 'serum',
@@ -71,6 +73,8 @@ export const PRODUCTS = [
   },
   {
     id: 'hydra-riche-cream',
+    photo: '/products/hydra-riche-cream.jpg',
+    photoAlt: 'Open jar of face cream on a white background',
     name: 'Hydra Riche Cream',
     tagline: 'Ceramide recovery night cream',
     category: 'moisturiser',
@@ -103,6 +107,8 @@ export const PRODUCTS = [
   },
   {
     id: 'silk-milk-cleanser',
+    photo: '/products/silk-milk-cleanser.jpg',
+    photoAlt: 'Facial cleanser bottle on a soft pastel background',
     name: 'Silk Milk Cleanser',
     tagline: 'Low-pH cream cleanser',
     category: 'cleanser',
@@ -135,6 +141,8 @@ export const PRODUCTS = [
   },
   {
     id: 'velvet-lip-tint',
+    photo: '/products/velvet-lip-tint.jpg',
+    photoAlt: 'Dark red lipstick with its cap on a white textured surface',
     name: 'Velvet Lip Tint',
     tagline: 'Weightless transfer-resistant colour',
     category: 'makeup',
@@ -167,6 +175,8 @@ export const PRODUCTS = [
   },
   {
     id: 'midnight-recovery-mask',
+    photo: '/products/midnight-recovery-mask.jpg',
+    photoAlt: 'Cosmetic serum bottle with water droplets and greenery',
     name: 'Midnight Recovery Mask',
     tagline: 'Overnight resurfacing mask',
     category: 'mask',
@@ -199,6 +209,8 @@ export const PRODUCTS = [
   },
   {
     id: 'dewy-skin-serum',
+    photo: '/products/dewy-skin-serum.jpg',
+    photoAlt: 'White skincare bottle with gold detailing on a cream backdrop',
     name: 'Dewy Skin Serum',
     tagline: 'Hyaluronic hydration essence',
     category: 'serum',
@@ -231,6 +243,8 @@ export const PRODUCTS = [
   },
   {
     id: 'silk-veil-cushion',
+    photo: '/products/silk-veil-cushion.jpg',
+    photoAlt: 'Cosmetic powder compact and makeup arranged on a pale surface',
     name: 'Silk Veil Cushion',
     tagline: 'Second-skin luminous foundation',
     category: 'makeup',
@@ -263,6 +277,8 @@ export const PRODUCTS = [
   },
   {
     id: 'purifying-clay-mask',
+    photo: '/products/purifying-clay-mask.jpg',
+    photoAlt: 'Woman wearing a green clay facial mask',
     name: 'Purifying Clay Mask',
     tagline: 'Weekly pore-clearing mask',
     category: 'mask',
@@ -415,3 +431,28 @@ export const formatPrice = (value) =>
 export const getProductById = (id) => PRODUCTS.find((product) => product.id === id)
 
 export const getCategoryById = (id) => CATEGORIES.find((category) => category.id === id)
+
+/**
+ * Photography credits.
+ *
+ * All product and editorial photography is sourced from Pexels and used under
+ * the Pexels Licence (free for commercial use, no attribution required — credits
+ * given here as good practice).
+ *
+ * Placeholder imagery: these are real stock photographs of real cosmetic products,
+ * not LUMIÈRE products. They must be reviewed and replaced with the client's own
+ * product photography before any real launch, and any shot showing a recognisable
+ * third-party brand or logo must be swapped out for trademark reasons.
+ */
+export const PHOTO_CREDITS = [
+  { file: 'vit-c-glow-serum.jpg', pexelsId: 12602356, photographer: 'Saher Suthriwala' },
+  { file: 'dewy-skin-serum.jpg', pexelsId: 13516796, photographer: 'mearlywan' },
+  { file: 'hydra-riche-cream.jpg', pexelsId: 36375310, photographer: 'Betül Üstün' },
+  { file: 'silk-milk-cleanser.jpg', pexelsId: 6689393, photographer: 'Jana Kukebal' },
+  { file: 'velvet-lip-tint.jpg', pexelsId: 14444882, photographer: 'Pexels' },
+  { file: 'silk-veil-cushion.jpg', pexelsId: 3373739, photographer: 'Shiny Diamond' },
+  { file: 'midnight-recovery-mask.jpg', pexelsId: 14149696, photographer: 'Dinh Dinh' },
+  { file: 'purifying-clay-mask.jpg', pexelsId: 6978043, photographer: 'Monstera Production' },
+  { file: 'editorial-jar.jpg', pexelsId: 6690857, photographer: 'Tara Winstead' },
+  { file: 'editorial-bottles.jpg', pexelsId: 15569178, photographer: 'Elena Druzhinina' },
+]
