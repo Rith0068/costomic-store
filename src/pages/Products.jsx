@@ -98,6 +98,15 @@ export default function Products() {
   const [sort, setSort] = useState('featured')
   const [filtersOpen, setFiltersOpen] = useState(false)
 
+  useEffect(() => {
+    if (!filtersOpen) return
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setFiltersOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [filtersOpen])
+
   const category = searchParams.get('category') ?? 'all'
 
   useEffect(() => {
@@ -211,6 +220,7 @@ export default function Products() {
               onClick={() => setFiltersOpen((open) => !open)}
               className="flex items-center gap-2 border border-ink-200 px-4 py-2.5 text-xs uppercase tracking-[0.15em] text-ink-700 transition-colors hover:border-ink-950 lg:hidden"
               aria-expanded={filtersOpen}
+              aria-controls="product-filters"
             >
               <Icon name="arrow-right" className="size-3.5" />
               Filters
@@ -239,11 +249,22 @@ export default function Products() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-12">
+        <div className="relative isolate mt-10 grid gap-10 lg:grid-cols-12">
+          {filtersOpen && (
+            <button
+              type="button"
+              aria-label="Close filters"
+              tabIndex={-1}
+              onClick={() => setFiltersOpen(false)}
+              className="absolute inset-0 -z-10 bg-ink-950/20 backdrop-blur-[2px] lg:hidden"
+            />
+          )}
+
           <aside
+            id="product-filters"
             className={`lg:col-span-3 ${
               filtersOpen
-                ? 'fade-up block border border-ink-200 p-6'
+                ? 'fade-up absolute inset-x-0 top-0 z-30 max-h-[75vh] overflow-y-auto overscroll-contain border border-ink-200 bg-ink-50 p-6 shadow-2xl lg:static lg:z-auto lg:max-h-none lg:overflow-visible lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none'
                 : 'hidden lg:col-span-3 lg:block'
             }`}
           >
