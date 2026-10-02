@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ProductVisual, shapeForCategory } from './ProductVisual'
+import { ProductVisual } from './ProductVisual'
+import { shapeForCategory } from './shapeForCategory'
 
 /**
  * Renders real product photography, falling back to the generated SVG artwork

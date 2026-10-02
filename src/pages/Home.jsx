@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CATEGORIES, FAQS, PROCESS_STEPS, PRODUCTS, TESTIMONIALS, getProductById } from '../data/products'
+import { CATEGORIES, FAQS, PROCESS_STEPS, TESTIMONIALS } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 import { useReveal } from '../hooks'
 import { Icon } from '../components/Icon'
 import { ProductCard, Rating } from '../components/ProductCard'
 import { ProductImage } from '../components/ProductImage'
 import { Marquee, Reveal, SectionHeading } from '../components/ui/Section'
 
-const HERO_PRODUCT = getProductById('vit-c-glow-serum')
 
-const CONCERNS = [
+const CONCERNS = [  
   {
     id: 'dehydration',
     label: 'Dehydration',
@@ -37,6 +37,9 @@ const CONCERNS = [
 ]
 
 function Hero() {
+  const { getById } = useProducts()
+  const heroProduct = getById('vit-c-glow-serum')
+
   return (
     <section className="relative overflow-hidden bg-ink-100/50">
       <div className="pointer-events-none absolute -right-32 -top-32 size-[34rem] rounded-full bg-blush-200/40 blur-3xl" />
@@ -89,11 +92,11 @@ function Hero() {
 
         <div className="fade-up relative lg:col-span-6" style={{ animationDelay: '200ms' }}>
           <div className="relative mx-auto max-w-md lg:max-w-none">
-            <ProductImage
-              product={HERO_PRODUCT}
-              priority
-              className="aspect-[4/5] w-full"
-            />
+            {heroProduct ? (
+              <ProductImage product={heroProduct} priority className="aspect-[4/5] w-full" />
+            ) : (
+              <div className="aspect-[4/5] w-full bg-ink-100" />
+            )}
             <div className="absolute -bottom-6 -left-4 w-48 border border-ink-200 bg-ink-50/95 p-5 shadow-xl backdrop-blur sm:-left-8 sm:w-56">
               <p className="eyebrow">Bestseller</p>
               <p className="mt-2 font-display text-xl leading-tight">Vitamin C Glow Serum</p>
@@ -143,8 +146,11 @@ function ValueProps() {
 }
 
 function Bestsellers() {
-  const featured = PRODUCTS.filter((product) => product.badge === 'Bestseller')
-  const rest = PRODUCTS.slice(0, 4)
+  const { products, status } = useProducts()
+  const featured = products.filter((product) => product.badge === 'Bestseller')
+  const rest = products.slice(0, 4)
+
+  if (status === 'loading' || status === 'error' || !rest.length) return null
 
   return (
     <section className="container-page py-24">
@@ -197,7 +203,10 @@ function Bestsellers() {
               Lip Tint. Our clinical data shows visible brightening in 86% of participants after
               four weeks of daily use.
             </p>
-            <Link to={`/products/${featured[0].id}`} className="btn-primary mt-8">
+            <Link
+              to={`/products/${featured[0]?.id ?? rest[0].id}`}
+              className="btn-primary mt-8"
+            >
               Discover the routine
               <Icon name="arrow-right" className="size-4" />
             </Link>
@@ -209,6 +218,8 @@ function Bestsellers() {
 }
 
 function Categories() {
+  const { products } = useProducts()
+
   return (
     <section className="container-page pb-24">
       <SectionHeading
@@ -219,7 +230,7 @@ function Categories() {
       />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {CATEGORIES.map((category, index) => {
-          const count = PRODUCTS.filter((p) => p.category === category.id).length
+          const count = products.filter((p) => p.category === category.id).length
           return (
             <Reveal key={category.id} delay={index * 90} className="h-full">
               <Link
@@ -253,10 +264,11 @@ function Categories() {
 }
 
 function RoutineFinder() {
+  const { products } = useProducts()
   const [selected, setSelected] = useState(null)
   const active = CONCERNS.find((concern) => concern.id === selected)
   const picks = active
-    ? active.picks.map((id) => PRODUCTS.find((product) => product.id === id)).filter(Boolean)
+    ? active.picks.map((id) => products.find((product) => product.id === id)).filter(Boolean)
     : []
 
   return (

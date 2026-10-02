@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CATEGORIES, PRODUCTS, getCategoryById } from '../data/products'
+import { CATEGORIES, getCategoryById } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 import { Icon } from '../components/Icon'
 import { ProductCard } from '../components/ProductCard'
 import { Reveal } from '../components/ui/Section'
@@ -15,7 +16,7 @@ const SORT_OPTIONS = [
   { id: 'name', label: 'Alphabetical' },
 ]
 
-function FilterPanel({ skinType, onSkinType, category, onCategory, onClear, activeCount }) {
+function FilterPanel({ products, skinType, onSkinType, category, onCategory, onClear, activeCount }) {
   return (
     <div className="space-y-8">
       <div>
@@ -51,8 +52,8 @@ function FilterPanel({ skinType, onSkinType, category, onCategory, onClear, acti
                   {item.name}
                   <span className="text-xs opacity-60">
                     {item.id === 'all'
-                      ? PRODUCTS.length
-                      : PRODUCTS.filter((p) => p.category === item.id).length}
+                      ? products.length
+                      : products.filter((p) => p.category === item.id).length}
                   </span>
                 </button>
               </li>
@@ -96,6 +97,7 @@ export default function Products() {
   const [query, setQuery] = useState('')
   const [skinType, setSkinType] = useState('all')
   const [sort, setSort] = useState('featured')
+  const { products, status, error } = useProducts()
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function Products() {
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase()
-    const result = PRODUCTS.filter((product) => {
+    const result = products.filter((product) => {
       const matchesCategory = category === 'all' || product.category === category
       const matchesSkin =
         skinType === 'all' || product.skinType.some((t) => t === skinType)
@@ -149,7 +151,7 @@ export default function Products() {
     }
 
     return [...result].sort(sorters[sort])
-  }, [category, skinType, query, sort])
+  }, [products, category, skinType, query, sort])
 
   const activeCount = (category !== 'all' ? 1 : 0) + (skinType !== 'all' ? 1 : 0)
 
@@ -269,6 +271,7 @@ export default function Products() {
             }`}
           >
             <FilterPanel
+              products={products}
               skinType={skinType}
               onSkinType={setSkinType}
               category={category}
@@ -280,11 +283,31 @@ export default function Products() {
 
           <div className="lg:col-span-9">
             <p className="mb-8 text-xs uppercase tracking-[0.2em] text-ink-400" aria-live="polite">
-              {filtered.length} product{filtered.length === 1 ? '' : 's'}
-              {query && ` matching “${query}”`}
+              {status === 'loading'
+                ? 'Loading products…'
+                : status === 'error'
+                  ? 'Products unavailable'
+                  : `${filtered.length} product${filtered.length === 1 ? '' : 's'}`}
+              {query && status === 'ready' && ` matching “${query}”`}
             </p>
 
-            {filtered.length > 0 ? (
+            {status === 'error' ? (
+              <div className="flex flex-col items-center border border-dashed border-blush-400/60 bg-blush-200/10 px-8 py-20 text-center">
+                <Icon name="warning" className="size-9 text-blush-500" strokeWidth={1} />
+                <h2 className="mt-6 text-3xl">We could not load the collection</h2>
+                <p className="mt-3 max-w-sm text-sm text-ink-500">{error}</p>
+              </div>
+            ) : status === 'loading' ? (
+              <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div key={index} aria-hidden className="animate-pulse">
+                    <div className="aspect-[4/5] bg-ink-100" />
+                    <div className="mt-4 h-3 w-2/3 bg-ink-100" />
+                    <div className="mt-2 h-3 w-1/3 bg-ink-100" />
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length > 0 ? (
               <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((product, index) => (
                   <ProductCard key={product.id} product={product} index={index} />

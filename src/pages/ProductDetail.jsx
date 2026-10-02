@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { formatPrice, getCategoryById, getProductById, PRODUCTS } from '../data/products'
+import { formatPrice, getCategoryById } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 import { useCart } from '../context/CartContext'
 import { Icon } from '../components/Icon'
 import { ProductCard, Rating } from '../components/ProductCard'
@@ -20,7 +21,8 @@ export default function ProductDetailRoute() {
 }
 
 function ProductDetail({ productId }) {
-  const product = getProductById(productId)
+  const { getById, getBySlug, products, status } = useProducts()
+  const product = getById(productId) ?? getBySlug(productId)
   const { addItem } = useCart()
   const [variant, setVariant] = useState(() => product?.sizes[0] ?? null)
   const [quantity, setQuantity] = useState(1)
@@ -39,9 +41,18 @@ function ProductDetail({ productId }) {
   }, [added])
 
   const related = useMemo(
-    () => (product ? PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id) : []),
-    [product],
+    () => (product ? products.filter((p) => p.category === product.category && p.id !== product.id) : []),
+    [products, product],
   )
+
+  if (!product && status === 'loading') {
+    return (
+      <section className="container-page py-32 text-center">
+        <p className="eyebrow">Loading</p>
+        <h1 className="mt-5 text-4xl">Fetching product</h1>
+      </section>
+    )
+  }
 
   if (!product) {
     return (

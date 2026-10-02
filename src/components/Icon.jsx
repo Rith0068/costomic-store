@@ -163,6 +163,91 @@ export function Icon({ name, className = 'size-5', strokeWidth = 1.4 }) {
           <path d="M14 3.5c.4 2.2 2 3.7 4.2 3.9" />
         </svg>
       )
+    case 'gauge':
+      return (
+        <svg {...common}>
+          <path d="M4 18a8 8 0 1 1 16 0" />
+          <path d="m12 14 4-4" />
+          <circle cx="12" cy="18" r="1" />
+        </svg>
+      )
+    case 'orders':
+      return (
+        <svg {...common}>
+          <path d="M6 3h9l4 4v14H6z" />
+          <path d="M15 3v4h4M9 12h7M9 16h5" />
+        </svg>
+      )
+    case 'box':
+      return (
+        <svg {...common}>
+          <path d="m12 2.5 8.5 4.5v10L12 21.5 3.5 17V7z" />
+          <path d="M3.5 7 12 11.5 20.5 7M12 11.5V21.5" />
+        </svg>
+      )
+    case 'users':
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3.4" />
+          <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
+          <path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17.5 14.4A6.5 6.5 0 0 1 21.5 20" />
+        </svg>
+      )
+    case 'settings':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1" />
+        </svg>
+      )
+    case 'logout':
+      return (
+        <svg {...common}>
+          <path d="M14 4h5v16h-5" />
+          <path d="M10 8l-4 4 4 4M6 12h10" />
+        </svg>
+      )
+    case 'warning':
+      return (
+        <svg {...common}>
+          <path d="M12 3.5 22 20H2z" />
+          <path d="M12 10v4M12 17.2v.1" />
+        </svg>
+      )
+    case 'trending-up':
+      return (
+        <svg {...common}>
+          <path d="m3 17 6-6 4 4 8-8" />
+          <path d="M15 7h6v6" />
+        </svg>
+      )
+    case 'trending-down':
+      return (
+        <svg {...common}>
+          <path d="m3 7 6 6 4-4 8 8" />
+          <path d="M15 17h6v-6" />
+        </svg>
+      )
+    case 'edit':
+      return (
+        <svg {...common}>
+          <path d="M4 20h4L20 8l-4-4L4 16z" />
+          <path d="m14 6 4 4" />
+        </svg>
+      )
+    case 'trash':
+      return (
+        <svg {...common}>
+          <path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14" />
+        </svg>
+      )
+    case 'external':
+      return (
+        <svg {...common}>
+          <path d="M14 4h6v6M20 4l-9 9" />
+          <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+        </svg>
+      )
     default:
       return null
   }

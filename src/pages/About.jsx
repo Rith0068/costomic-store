@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { BENEFITS, CATEGORIES, PROCESS_STEPS, PRODUCTS } from '../data/products'
+import { BENEFITS, CATEGORIES, PROCESS_STEPS } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 import { Icon } from '../components/Icon'
 import { EditorialImage } from '../components/ProductImage'
 import { Reveal, SectionHeading } from '../components/ui/Section'
@@ -34,6 +35,7 @@ const TIMELINE = [
 ]
 
 export default function About() {
+  const { products } = useProducts()
   useEffect(() => {
     document.title = 'Our story — LUMIÈRE'
   }, [])
@@ -225,7 +227,7 @@ export default function About() {
             ))}
           </div>
           <h2 className="max-w-2xl text-4xl leading-tight sm:text-5xl">
-            Eight formulas, {PRODUCTS.length * 40}+ five-star reviews
+            Eight formulas, {products.length * 40}+ five-star reviews
           </h2>
           <Link to="/products" className="btn-primary">
             Explore the collection

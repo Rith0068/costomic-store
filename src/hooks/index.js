@@ -1,4 +1,52 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+export function useResource(loader, key = '') {
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const loaderRef = useRef(loader)
+
+  useEffect(() => {
+    loaderRef.current = loader
+  }, [loader])
+
+  useEffect(() => {
+    let cancelled = false
+
+    loaderRef
+      .current()
+      .then((result) => {
+        if (cancelled) return
+        setData(result)
+        setError('')
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [key])
+
+  const reload = useCallback(async () => {
+    setLoading(true)
+    try {
+      const result = await loaderRef.current()
+      setData(result)
+      setError('')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return { data, error, loading, reload }
+}
 
 export function useScrollPosition(threshold = 24) {
   const [scrolled, setScrolled] = useState(false)

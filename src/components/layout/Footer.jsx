@@ -157,6 +157,12 @@ export function Footer() {
             <a href="#" onClick={(e) => e.preventDefault()} className="py-1.5 hover:text-ink-950">
               Terms
             </a>
+            <Link to="/login" className="py-1.5 hover:text-ink-950">
+              Sign in
+            </Link>
+            <Link to="/login?mode=admin" className="py-1.5 hover:text-ink-950">
+              Admin
+            </Link>
             <span className="flex items-center gap-1.5 text-sage-600">
               <Icon name="leaf" className="size-3.5" /> Leaping Bunny certified
             </span>

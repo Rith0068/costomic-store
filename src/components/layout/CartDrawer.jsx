@@ -1,5 +1,8 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { formatPrice } from '../../data/products'
+import { api } from '../../lib/api'
+import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useLockBodyScroll, useOnEscape } from '../../hooks'
 import { Icon } from '../Icon'
@@ -8,10 +11,34 @@ import { ProductImage } from '../ProductImage'
 const FREE_SHIPPING_THRESHOLD = 60
 
 export function CartDrawer() {
-  const { items, subtotal, isOpen, closeCart, updateQuantity, removeItem, count } = useCart()
+  const { items, subtotal, isOpen, closeCart, updateQuantity, removeItem, count, busy } =
+    useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [placing, setPlacing] = useState(false)
+  const [error, setError] = useState('')
 
   useLockBodyScroll(isOpen)
   useOnEscape(closeCart, isOpen)
+
+  const startCheckout = async () => {
+    if (!user) {
+      closeCart()
+      navigate('/login?next=checkout')
+      return
+    }
+    setError('')
+    setPlacing(true)
+    try {
+      const data = await api.placeOrder()
+      closeCart()
+      navigate('/checkout/success', { state: { order: data.order } })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setPlacing(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -82,34 +109,37 @@ export function CartDrawer() {
               {items.map((item) => (
                 <li key={item.key} className="flex gap-4 py-5">
                   <Link
-                    to={`/products/${item.id}`}
+                    to={`/products/${item.productId}`}
                     onClick={closeCart}
                     className="shrink-0"
-                    aria-label={item.name}
+                    aria-label={item.snapshot.name}
                   >
-                    <ProductImage product={item} className="size-24 rounded-sm" />
+                    <ProductImage
+                      product={{ ...item.snapshot, shade: undefined }}
+                      className="size-24 rounded-sm"
+                    />
                   </Link>
 
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="flex items-start justify-between gap-3">
                       <Link
-                        to={`/products/${item.id}`}
+                        to={`/products/${item.productId}`}
                         onClick={closeCart}
                         className="font-display text-lg leading-tight hover:text-ink-500"
                       >
-                        {item.name}
+                        {item.snapshot.name}
                       </Link>
                       <button
                         type="button"
                         onClick={() => removeItem(item.key)}
                         className="shrink-0 p-1 text-ink-400 transition-colors hover:text-blush-600"
-                        aria-label={`Remove ${item.name}`}
+                        aria-label={`Remove ${item.snapshot.name}`}
                       >
                         <Icon name="close" className="size-4" />
                       </button>
                     </div>
                     <p className="mt-0.5 text-xs uppercase tracking-[0.15em] text-ink-400">
-                      {item.variant}
+                      {item.variant || 'Standard'}
                     </p>
 
                     <div className="mt-auto flex items-center justify-between pt-3">
@@ -135,7 +165,7 @@ export function CartDrawer() {
                         </button>
                       </div>
                       <p className="text-sm tabular-nums">
-                        {formatPrice(item.price * item.quantity)}
+                        {formatPrice(item.snapshot.price * item.quantity)}
                       </p>
                     </div>
                   </div>
@@ -151,9 +181,24 @@ export function CartDrawer() {
               <p className="mt-1 text-xs text-ink-400">
                 Taxes included. Shipping calculated at checkout.
               </p>
-              <Link to="/contact" onClick={closeCart} className="btn-primary mt-5 w-full">
-                Proceed to checkout
-              </Link>
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-blush-600">
+                  {error}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={startCheckout}
+                disabled={placing || busy}
+                className="btn-primary mt-5 w-full disabled:opacity-60"
+              >
+                {placing ? 'Placing order...' : 'Proceed to checkout'}
+              </button>
+              {!user && (
+                <p className="mt-2 text-center text-xs text-ink-400">
+                  You will be asked to sign in before paying.
+                </p>
+              )}
               <button
                 type="button"
                 onClick={closeCart}
