@@ -116,10 +116,10 @@ server/
 ├── auth.js                   # password hashing, requireAdmin, login rate limiting
 ├── productSchema.js          # product validation + normalisation
 ├── seed.js                   # first-run admin, catalogue and settings
-├── store.js                  # atomic JSON file store
-├── sessionStore.js           # file-backed express-session store
+├── store.js                  # storage layer: Redis when configured, else JSON files
+├── sessionStore.js           # express-session store backed by store.js
 ├── validate.js               # shared input validators
-└── data/                     # products, users, orders, carts, sessions, settings (.json)
+└── data/                     # local JSON fallback: products, users, orders, carts, sessions, settings
 
 src/
 ├── main.jsx                  # BrowserRouter + root render
@@ -172,13 +172,73 @@ Before this goes anywhere near a real customer, a human **must** review every im
    competitor's product as LUMIÈRE is a trademark problem, not a cosmetic one.
 3. Confirm the subject of each shot actually matches the product it illustrates. These were
    matched from stock-photo descriptions, not from inspecting the images.
-### ⚠️ Data is a JSON file store
+### ⚠️ Storage: Redis in production, JSON files on your machine
 
-`server/data/*.json` is the database. Writes are atomic (temp file + rename) and serialised
-per collection, but there is no migration path, no indexing and no concurrency control
-beyond a single process. Fine for a demo or a single-store pilot; **not** suitable for real
-customers — move to a real database before launch.
+`server/store.js` picks a backend at boot:
 
-`server/data/sessions.json` stores live session state and `users.json` stores bcrypt hashes.
-Both are gitignored, but they are still plaintext on disk — keep `server/data/` out of any
-backup you do not encrypt, and delete the seeded test accounts before launch.
+| Condition | Backend | Survives redeploy? |
+| --- | --- | --- |
+| `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set | Upstash Redis | Yes |
+| Otherwise, on your machine | `server/data/*.json` | Yes |
+| Otherwise, on a serverless sandbox (no Redis) | `/tmp` JSON — **ephemeral** | **No** |
+
+That last row is the one to avoid. Vercel functions get a fresh, read-only filesystem per
+deployment, so without Redis the catalogue is re-seeded from `src/data/products.js` on every
+cold start and any product you create or edit in the admin panel is lost — as are sessions,
+so admin logins drop at random. Products will still *display*, because seeding is automatic;
+the CRUD you do in the dashboard just will not stick. The server logs which backend it chose:
+
+```
+[server] storage: redis
+```
+
+The Redis path also drops the in-process read cache, so every request sees fresh data —
+necessary once requests can land on different instances.
+
+Writes are still read-modify-write over a whole collection, serialised per key. Two writes to
+*different* collections never collide, but two edits to the same collection at the same moment
+can still drop one — Redis makes data durable, it does not add transactions or row-level
+locking. One admin at a time is fine; if you ever need concurrent editors, add a CAS/expiry
+or move products to a real database.
+
+Sessions and bcrypt hashes live in the same store. They are gitignored either way, but in
+the local JSON fallback they are plaintext on disk — keep `server/data/` out of any backup
+you do not encrypt, and delete the seeded test accounts before launch.
+
+## Deploying to Vercel
+
+The Vite build is a static SPA and the Express app runs as a single serverless function.
+
+1. **Push the repository** and import it in the Vercel dashboard.
+2. **Add a Redis store.** Project → Storage → Create Database → *Redis* (Upstash). Vercel
+   injects `KV_REST_API_URL` and `KV_REST_API_TOKEN` for you; nothing to copy.
+3. **Set the env vars** in Project → Settings → Environment Variables (all environments):
+
+   | Variable | Value |
+   | --- | --- |
+   | `SESSION_SECRET` | `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+   | `ADMIN_EMAIL` | your admin login |
+   | `ADMIN_PASSWORD` | 12+ characters — this creates the single admin account |
+
+   `PORT` and `NODE_ENV` are set by Vercel; do not override them.
+
+4. **Deploy.** Build settings are committed in `vercel.json` (framework `vite`, output
+   `dist`), so nothing needs configuring in the dashboard.
+
+`vercel.json` rewrites matter and are easy to get wrong:
+
+```json
+"rewrites": [
+  { "source": "/api/(.*)", "destination": "/api/index" },
+  { "source": "/((?!api/).*)", "destination": "/index.html" }
+]
+```
+
+The first sends every API call to the function. The second is the SPA fallback — without it,
+deep links such as `/admin` or `/products/vit-c-glow-serum` return 404 because no such file
+exists in `dist/`. Real files (`/assets/*`, `/products/*`, `/favicon.svg`) are served by the
+filesystem before rewrites run, so only unmatched paths fall through to `index.html`. The
+negative lookahead keeps `/api` from being swallowed by the fallback.
+
+Admin bootstrap failures are logged rather than thrown, so a forgotten `ADMIN_PASSWORD`
+degrades to "admin cannot sign in" instead of 500s across the whole storefront.

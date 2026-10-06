@@ -1,5 +1,3 @@
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import cookieParser from 'cookie-parser'
 import express from 'express'
 import session from 'express-session'
@@ -34,13 +32,22 @@ import {
 import { normaliseProduct } from '../server/productSchema.js'
 import { ensureAdmin, ensureProducts, ensureSettings } from '../server/seed.js'
 import { createSessionStore } from '../server/sessionStore.js'
-import { newId, read, slugify, update } from '../server/store.js'
+import { newId, read, slugify, update, usingRedis, DATA_DIR } from '../server/store.js'
 import { HttpError, badRequest, email as parseEmail, num, str } from '../server/validate.js'
-
-const here = path.dirname(fileURLToPath(import.meta.url))
 
 if (!process.env.SESSION_SECRET) {
   console.warn('[server] SESSION_SECRET not set - sessions will not survive a restart')
+}
+
+if (usingRedis) {
+  console.log('[server] storage: redis')
+} else {
+  console.warn(
+    `[server] storage: json files in ${DATA_DIR}` +
+      (process.env.VERCEL === '1'
+        ? ' - this directory is ephemeral on Vercel, data will reset on redeploy'
+        : ''),
+  )
 }
 
 const app = express()
@@ -587,9 +594,31 @@ let initialized = false
 async function init() {
   if (initialized) return
   initialized = true
-  await ensureProducts()
-  await ensureSettings()
-  await ensureAdmin()
+
+  // Catalogue and settings must not reject the module import. If the store is
+  // unreachable the import would otherwise throw, Vercel reports an opaque
+  // "function crashed", and even the routes that could work are unavailable.
+  // Swallowing lets the error handler return a normal JSON 500 with a log line
+  // that names the real cause.
+  try {
+    await ensureProducts()
+    await ensureSettings()
+  } catch (error) {
+    console.error('[server] could not initialise the catalogue:', error.message)
+    if (usingRedis) {
+      console.error(
+        '[server] storage is Redis - check KV_REST_API_URL and KV_REST_API_TOKEN, and that the store is reachable',
+      )
+    }
+  }
+
+  // A missing ADMIN_PASSWORD must not take the whole API down, otherwise a
+  // forgotten env var leaves the storefront returning 500s on every cold start.
+  try {
+    await ensureAdmin()
+  } catch (error) {
+    console.error('[server] admin account was not created:', error.message)
+  }
 }
 
 await init()
