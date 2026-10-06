@@ -241,6 +241,20 @@ export function Icon({ name, className = 'size-5', strokeWidth = 1.4 }) {
           <path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14" />
         </svg>
       )
+    case 'user':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8.5" r="3.5" />
+          <path d="M5 20a7 7 0 0 1 14 0" />
+        </svg>
+      )
+    case 'shield':
+      return (
+        <svg {...common}>
+          <path d="M12 3 19 6v6c0 4.2-3 7.4-7 9-4-1.6-7-4.8-7-9V6z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      )
     case 'external':
       return (
         <svg {...common}>

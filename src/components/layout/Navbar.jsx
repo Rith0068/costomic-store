@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useLockBodyScroll, useOnEscape, useScrollPosition } from '../../hooks'
 import { Icon } from '../Icon'
@@ -32,6 +33,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const scrolled = useScrollPosition()
   const { count, openCart } = useCart()
+  const { user, isAdmin } = useAuth()
 
   useLockBodyScroll(menuOpen)
   useOnEscape(() => setMenuOpen(false), menuOpen)
@@ -94,6 +96,23 @@ export function Navbar() {
             >
               <Icon name="search" />
             </Link>
+            {user ? (
+              <Link
+                to={isAdmin ? '/admin' : '/account'}
+                className="p-2.5 text-ink-950 transition-colors hover:text-ink-500"
+                aria-label={isAdmin ? 'Store dashboard' : 'Your account'}
+              >
+                <Icon name={isAdmin ? 'shield' : 'user'} />
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="hidden p-2.5 text-ink-950 transition-colors hover:text-ink-500 sm:block"
+                aria-label="Sign in"
+              >
+                <Icon name="user" />
+              </Link>
+            )}
             <button
               type="button"
               onClick={openCart}
@@ -153,8 +172,45 @@ export function Navbar() {
             </ul>
 
             <div className="mt-auto space-y-3 border-t border-ink-200 pt-6 text-sm text-ink-600">
+              {user ? (
+                <div className="space-y-3">
+                  <p className="text-[0.7rem] uppercase tracking-[0.25em] text-ink-400">
+                    Signed in
+                  </p>
+                  <p className="text-ink-950">{user.name}</p>
+                  <Link
+                    to={isAdmin ? '/admin' : '/account'}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 text-ink-950"
+                  >
+                    <Icon name={isAdmin ? 'shield' : 'user'} className="size-4" />
+                    {isAdmin ? 'Store dashboard' : 'Your account'}
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-[0.7rem] uppercase tracking-[0.25em] text-ink-400">
+                    Client services
+                  </p>
+                  <Link
+                    to="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="block text-ink-950"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="block hover:text-ink-950"
+                  >
+                    Create an account
+                  </Link>
+                </div>
+              )}
+
               <p className="text-[0.7rem] uppercase tracking-[0.25em] text-ink-400">
-                Client services
+                Reach us
               </p>
               <a href="mailto:hello@lumiere.ch" className="block hover:text-ink-950">
                 hello@lumiere.ch

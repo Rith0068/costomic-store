@@ -4,7 +4,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-export const DATA_DIR = path.join(here, 'data')
+const isVercel = process.env.VERCEL === '1' || process.env.NOW_REGION
+export const DATA_DIR = isVercel ? path.join('/tmp', 'lumiere-data') : path.join(here, 'data')
 
 const caches = new Map()
 const writeQueues = new Map()

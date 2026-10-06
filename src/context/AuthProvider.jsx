@@ -36,6 +36,10 @@ export function AuthProvider({ children }) {
     return data
   }, [])
 
+  const applyUser = useCallback((next) => {
+    setUser(next)
+  }, [])
+
   const logout = useCallback(async () => {
     try {
       await api.logout()
@@ -45,8 +49,8 @@ export function AuthProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ user, ready, login, register, logout, isAdmin: user?.role === 'admin' }),
-    [user, ready, login, register, logout],
+    () => ({ user, ready, login, register, logout, applyUser, isAdmin: user?.role === 'admin' }),
+    [user, ready, login, register, logout, applyUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

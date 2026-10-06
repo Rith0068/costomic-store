@@ -47,8 +47,14 @@ export const api = {
   clearCart: () => request('/api/cart', { method: 'DELETE' }),
 
   placeOrder: () => request('/api/orders', { method: 'POST', body: {} }),
+  myOrders: () => request('/api/orders'),
+
+  account: () => request('/api/account'),
+  updateAccount: (body) => request('/api/account', { method: 'PATCH', body }),
+  changePassword: (body) => request('/api/auth/password', { method: 'POST', body }),
 
   adminSummary: () => request('/api/admin/summary'),
+  adminStats: () => request('/api/admin/stats'),
   adminOrders: () => request('/api/admin/orders'),
   setOrderStatus: (id, status) =>
     request(`/api/admin/orders/${encodeURIComponent(id)}`, {

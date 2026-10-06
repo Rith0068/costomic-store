@@ -157,6 +157,9 @@ export function Footer() {
             <a href="#" onClick={(e) => e.preventDefault()} className="py-1.5 hover:text-ink-950">
               Terms
             </a>
+            <Link to="/account" className="py-1.5 hover:text-ink-950">
+              My account
+            </Link>
             <Link to="/login" className="py-1.5 hover:text-ink-950">
               Sign in
             </Link>

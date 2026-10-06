@@ -213,6 +213,98 @@ export function buildSummary({ products, orders, users, settings = DEFAULT_SETTI
   }
 }
 
+export function registrationSeries(users, days = 30, now = Date.now()) {
+  const start = new Date(now)
+  start.setUTCHours(0, 0, 0, 0)
+
+  const buckets = new Map()
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    buckets.set(dayKey(start.getTime() - offset * DAY_MS), { signups: 0 })
+  }
+
+  for (const user of users) {
+    const bucket = buckets.get(dayKey(user.createdAt))
+    if (bucket) bucket.signups += 1
+  }
+
+  return [...buckets.entries()].map(([date, bucket]) => ({ date, ...bucket }))
+}
+
+export function accountSummary(orders) {
+  const paid = orders.filter(countsTowardsRevenue)
+  const units = paid.reduce(
+    (total, order) => total + order.lines.reduce((sum, line) => sum + line.quantity, 0),
+    0,
+  )
+
+  const lastOrderAt = orders.reduce(
+    (latest, order) => (!latest || order.placedAt > latest ? order.placedAt : latest),
+    null,
+  )
+
+  return {
+    orders: orders.length,
+    cancelled: orders.length - paid.length,
+    spend: round2(paid.reduce((sum, order) => sum + order.total, 0)),
+    units,
+    lastOrderAt,
+  }
+}
+
+export function buildStats({ products, orders, users, settings = DEFAULT_SETTINGS }) {
+  const summary = buildSummary({ products, orders, users, settings })
+  const customers = users.filter((user) => user.role === 'customer')
+  const paid = orders.filter(countsTowardsRevenue)
+  const lowStockAt = settings.lowStockAt ?? LOW_STOCK_AT
+  const inventory = inventoryRows(products, { lowStockAt })
+
+  const buyers = new Set(
+    paid.map((order) => order.userId ?? String(order.email ?? '').toLowerCase()),
+  )
+
+  return {
+    users: {
+      total: users.length,
+      customers: customers.length,
+      admins: users.length - customers.length,
+      withOrders: buyers.size,
+      withoutOrders: Math.max(customers.length - buyers.size, 0),
+      repeatBuyers: customers.filter((user) => buyers.has(user.id) && countOrders(user.id, orders) > 1)
+        .length,
+      newIn30Days: customers.filter(
+        (user) => Date.now() - new Date(user.createdAt).getTime() < 30 * DAY_MS,
+      ).length,
+      lifetimeSpend: round2(summary.revenue),
+    },
+    products: {
+      total: products.length,
+      inStock: inventory.filter((row) => row.status === 'ok').length,
+      lowStock: inventory.filter((row) => row.status === 'low').length,
+      outOfStock: inventory.filter((row) => row.status === 'out').length,
+      unitsInStock: summary.unitsInStock,
+      stockValue: summary.stockValue,
+      featured: products.filter((product) => product.featured).length,
+      byCategory: categorySplit(products),
+    },
+    orders: {
+      total: orders.length,
+      paid: paid.length,
+      cancelled: summary.cancelled,
+      open: orders.filter((order) => order.status === 'confirmed' || order.status === 'processing')
+        .length,
+      revenue: summary.revenue,
+      averageOrderValue: summary.averageOrderValue,
+      unitsSold: summary.unitsSold,
+    },
+  }
+}
+
+function countOrders(userId, orders) {
+  return orders.filter(
+    (order) => order.userId === userId && countsTowardsRevenue(order),
+  ).length
+}
+
 export function assertOrderStatus(status) {
   const value = str(status, { field: 'Status', max: 20 }).toLowerCase()
   if (!ORDER_STATUSES.includes(value)) {

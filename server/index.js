@@ -17,14 +17,17 @@ import {
 } from './auth.js'
 import {
   DEFAULT_SETTINGS,
+  accountSummary,
   assertOrderStatus,
   buildSeries,
+  buildStats,
   buildSummary,
   categorySplit,
   customerRows,
   inventoryRows,
   normaliseSettings,
   orderRows,
+  registrationSeries,
   round2,
   topProducts,
 } from './analytics.js'
@@ -440,9 +443,84 @@ app.get(
   '/api/orders',
   requireSession,
   route(async (req, res) => {
-    if (req.session.role !== 'admin') throw new HttpError(403, 'Administrator access required')
+    if (req.session.role === 'admin') {
+      const all = await read('orders', [])
+      return res.json({ orders: all.slice(-100).reverse() })
+    }
+
     const orders = await read('orders', [])
-    return res.json({ orders: orders.slice(-100).reverse() })
+    const mine = orders.filter((order) => order.userId === req.session.userId)
+    return res.json({
+      orders: mine
+        .slice(-100)
+        .reverse()
+        .map((order) => ({
+          ...order,
+          itemCount: order.lines.reduce((total, line) => total + line.quantity, 0),
+        })),
+    })
+  }),
+)
+
+app.get(
+  '/api/account',
+  requireSession,
+  route(async (req, res) => {
+    const [users, orders] = await Promise.all([read('users', []), read('orders', [])])
+    const user = users.find((entry) => entry.id === req.session.userId)
+    if (!user) throw new HttpError(401, 'You need to sign in to do that')
+
+    const mine = orders.filter((order) => order.userId === user.id)
+
+    return res.json({
+      user: publicUser(user),
+      stats: accountSummary(mine),
+      orders: mine
+        .slice(-25)
+        .reverse()
+        .map((order) => ({
+          ...order,
+          itemCount: order.lines.reduce((total, line) => total + line.quantity, 0),
+        })),
+    })
+  }),
+)
+
+app.patch(
+  '/api/account',
+  requireSession,
+  route(async (req, res) => {
+    const name = str(req.body?.name, { field: 'Name', min: 2, max: 60, required: true })
+
+    const updated = await update('users', [], (users) => {
+      const user = users.find((entry) => entry.id === req.session.userId)
+      if (!user) return null
+      user.name = name
+      return user
+    })
+
+    if (!updated) throw new HttpError(404, 'Account not found')
+    req.session.name = name
+
+    return res.json({ user: publicUser(updated) })
+  }),
+)
+
+app.get(
+  '/api/admin/stats',
+  requireAdmin,
+  route(async (req, res) => {
+    const [products, orders, users, settings] = await Promise.all([
+      read('products', []),
+      read('orders', []),
+      read('users', []),
+      read('settings', DEFAULT_SETTINGS),
+    ])
+
+    return res.json({
+      stats: buildStats({ products, orders, users, settings }),
+      registrations: registrationSeries(users, 30),
+    })
   }),
 )
 
@@ -599,12 +677,32 @@ app.use((error, req, res, _next) => {
   })
 })
 
-await ensureProducts()
-await ensureSettings()
-const admin = await ensureAdmin()
+// Initialize (will run on import/start)
+let initialized = false
+async function init() {
+  if (initialized) return
+  initialized = true
+  await ensureProducts()
+  await ensureSettings()
+  await ensureAdmin()
+}
+
+init().catch((err) => {
+  console.error('[server] init failed:', err)
+})
 
 const port = Number(process.env.PORT ?? 3001)
-app.listen(port, () => {
-  console.log(`[server] http://localhost:${port}`)
-  console.log(`[server] admin: ${admin.email} (${admin.created ? 'created' : 'existing'})`)
-})
+if (process.env.NODE_ENV !== 'production' || process.env.RUN_SERVER !== 'true') {
+  // Don't auto-listen in serverless; but allow local dev as-is? Check if running directly
+  if (import.meta.url === `file://${process.argv[1]}`) {
+    app.listen(port, () => {
+      console.log(`[server] http://localhost:${port}`)
+    })
+  }
+} else {
+  if (import.meta.url === `file://${process.argv[1]}`) {
+    app.listen(port, () => {})
+  }
+}
+
+export default app

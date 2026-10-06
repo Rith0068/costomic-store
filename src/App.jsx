@@ -15,8 +15,10 @@ import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import OrderConfirmation from './pages/OrderConfirmation'
+import Account from './pages/Account'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import OverviewSection from './pages/admin/OverviewSection'
+import StatsSection from './pages/admin/StatsSection'
 import OrdersSection from './pages/admin/OrdersSection'
 import ProductsSection from './pages/admin/ProductsSection'
 import InventorySection from './pages/admin/InventorySection'
@@ -74,6 +76,7 @@ export default function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/account" element={<Account />} />
               <Route path="/checkout/success" element={<OrderConfirmation />} />
               <Route path="*" element={<NotFound />} />
             </Route>
@@ -81,6 +84,7 @@ export default function App() {
             <Route path="/admin" element={<AdminDashboard />}>
               <Route index element={<Navigate to="/admin/overview" replace />} />
               <Route path="overview" element={<OverviewSection />} />
+              <Route path="stats" element={<StatsSection />} />
               <Route path="orders" element={<OrdersSection />} />
               <Route path="products" element={<ProductsSection />} />
               <Route path="inventory" element={<InventorySection />} />
