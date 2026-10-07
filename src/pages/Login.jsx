@@ -19,7 +19,7 @@ export default function Login() {
   const next = params.get('next') || '/'
   const adminMode = params.get('mode') === 'admin'
 
-  const [values, setValues] = useState({ email: '', password: '' })
+  const [values, setValues] = useState({ email: '', password: '', showPassword: false })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -86,15 +86,30 @@ export default function Login() {
 
           <label className="mt-6 block text-xs uppercase tracking-[0.15em] text-ink-500">
             Password
-            <input
-              type="password"
-              value={values.password}
-              onChange={update('password')}
-              autoComplete="current-password"
-              required
-              placeholder="Your password"
-              className={fieldClass(false)}
-            />
+            <div className="relative">
+              <input
+                type={values.showPassword ? 'text' : 'password'}
+                value={values.password}
+                onChange={update('password')}
+                autoComplete="current-password"
+                required
+                placeholder="Your password"
+                className={fieldClass(false) + ' pr-10'}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setValues((current) => ({
+                    ...current,
+                    showPassword: !current.showPassword,
+                  }))
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-ink-500 transition-colors hover:text-ink-950"
+                aria-label={values.showPassword ? 'Hide password' : 'Show password'}
+              >
+                <Icon name={values.showPassword ? 'eye-off' : 'eye'} className="size-4" />
+              </button>
+            </div>
           </label>
 
           <button type="submit" disabled={busy} className="btn-primary mt-8 w-full disabled:opacity-60">

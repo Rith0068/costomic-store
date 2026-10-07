@@ -262,6 +262,21 @@ export function Icon({ name, className = 'size-5', strokeWidth = 1.4 }) {
           <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
         </svg>
       )
+    case 'eye':
+      return (
+        <svg {...common}>
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      )
+    case 'eye-off':
+      return (
+        <svg {...common}>
+          <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a20.4 20.4 0 0 1-3.3 5.7M6.2 6.2A20.4 20.4 0 0 0 1 12s4 8 11 8a11 11 0 0 0 4.8-1.2" />
+          <path d="M3 3l18 18" />
+          <circle cx="12" cy="12" r="2.8" />
+        </svg>
+      )
     default:
       return null
   }
